@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { usersAPI, User } from "@/api/users";
+import { superadminAPI } from "@/api/superadmin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Edit, Trash2, Power, PowerOff } from "lucide-react";
+import { UserPlus, Edit, Trash2, Power, PowerOff, Users, Shield, UserCog } from "lucide-react";
 import { toast } from "sonner";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -39,16 +40,28 @@ export default function UserManagement() {
         role: "waiter" as "admin" | "waiter",
     });
 
-    const { data: users = [], isLoading } = useQuery({
-        queryKey: ["users"],
-        queryFn: usersAPI.getAll,
+    // Fetch all users using superadmin API
+    const { data: usersData, isLoading } = useQuery({
+        queryKey: ["superadmin-users"],
+        queryFn: superadminAPI.getAllUsers,
         refetchInterval: 5000,
     });
+
+    // Fetch user statistics
+    const { data: statsData } = useQuery({
+        queryKey: ["superadmin-stats"],
+        queryFn: superadminAPI.getUserStats,
+        refetchInterval: 10000,
+    });
+
+    const users = usersData?.users || [];
+    const stats = statsData?.stats || {};
 
     const createMutation = useMutation({
         mutationFn: usersAPI.create,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-stats"] });
             toast.success("User created successfully");
             setIsCreateDialogOpen(false);
             resetForm();
@@ -62,7 +75,8 @@ export default function UserManagement() {
         mutationFn: ({ id, data }: { id: string; data: Partial<User> }) =>
             usersAPI.update(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-stats"] });
             toast.success("User updated successfully");
             setIsEditDialogOpen(false);
             setSelectedUser(null);
@@ -75,7 +89,8 @@ export default function UserManagement() {
     const deleteMutation = useMutation({
         mutationFn: usersAPI.delete,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-stats"] });
             toast.success("User deleted successfully");
         },
         onError: (error: any) => {
@@ -86,7 +101,8 @@ export default function UserManagement() {
     const toggleActiveMutation = useMutation({
         mutationFn: usersAPI.toggleActive,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-users"] });
+            queryClient.invalidateQueries({ queryKey: ["superadmin-stats"] });
             toast.success("User status updated");
         },
         onError: (error: any) => {
@@ -157,6 +173,54 @@ export default function UserManagement() {
 
     return (
         <div className="space-y-6">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Total Users
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.total || 0}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                            <Shield className="h-4 w-4" />
+                            Admins
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.admins || 0}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                            <UserCog className="h-4 w-4" />
+                            Owners
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.owners || 0}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Waiters
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.waiters || 0}</div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-2xl font-bold">User Management</h3>

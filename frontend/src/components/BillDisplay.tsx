@@ -133,7 +133,7 @@ const BillDisplay = ({ bill, onClose }: BillDisplayProps) => {
               {bill.items.map((item: any, index: number) => (
                 <div key={index} className="flex justify-between items-center py-3 border-b border-dashed">
                   <div className="flex-1">
-                    <p className="font-semibold text-base">{item.name}</p>
+                    <p className="font-semibold text-base">{item.name || item.item_name || 'Unknown Item'}</p>
                     <p className="text-xs text-muted-foreground font-mono mt-1">
                       ₹{item.price.toFixed(2)} × {item.quantity}
                     </p>
@@ -190,7 +190,7 @@ const BillDisplay = ({ bill, onClose }: BillDisplayProps) => {
             <h3 className="font-bold text-sm uppercase tracking-wide text-muted-foreground">Items Required:</h3>
             {bill.items.map((item: any, index: number) => (
               <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg border border-primary/10">
-                <span className="font-bold text-lg">{item.name}</span>
+                <span className="font-bold text-lg">{item.name || item.item_name || 'Unknown Item'}</span>
                 <span className="text-3xl font-bold text-primary bg-primary/10 px-4 py-2 rounded">× {item.quantity}</span>
               </div>
             ))}

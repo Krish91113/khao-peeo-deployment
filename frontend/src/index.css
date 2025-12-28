@@ -115,6 +115,10 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -276,14 +280,14 @@ All colors MUST be HSL.
 
 /* Mobile-friendly spacing */
 @media (max-width: 640px) {
-  .mobile-stack > * + * {
+  .mobile-stack>*+* {
     margin-top: 0.5rem;
   }
-  
+
   .mobile-text-sm {
     font-size: 0.875rem;
   }
-  
+
   .mobile-text-xs {
     font-size: 0.75rem;
   }
@@ -354,5 +358,18 @@ All colors MUST be HSL.
     left: 0;
     top: 0;
     width: 80mm;
+    margin: 0;
+    padding: 10mm;
+  }
+
+  /* Hide print buttons and other UI elements */
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Set page size for thermal printer */
+  @page {
+    size: 80mm auto;
+    margin: 0;
   }
 }

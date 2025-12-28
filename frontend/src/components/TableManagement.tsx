@@ -130,7 +130,7 @@ const TableManagementEnhanced = ({ onTableSelect, onResetTable, onGenerateKOT }:
     setGeneratingKOT(table._id || table.id);
 
     try {
-      // Get orders for this table
+      // Get ALL orders for this table
       const tableOrders = orders.filter(o => (o.table_id || o.table?._id) === (table._id || table.id));
       if (tableOrders.length === 0) {
         toast.error("No orders found for this table");
@@ -138,20 +138,42 @@ const TableManagementEnhanced = ({ onTableSelect, onResetTable, onGenerateKOT }:
         return;
       }
 
-      // Get the latest order's items
-      const latestOrder = tableOrders[tableOrders.length - 1];
-      const items = latestOrder.items || [];
+      // Aggregate ALL items from ALL orders for this table
+      const allItems: any[] = [];
+      tableOrders.forEach(order => {
+        if (order.items && order.items.length > 0) {
+          order.items.forEach((item: any) => {
+            // Check if item already exists in allItems
+            const existingItem = allItems.find(i =>
+              (i.item_name || i.name) === (item.item_name || item.name)
+            );
 
-      if (items.length === 0) {
-        toast.error("No items in order");
+            if (existingItem) {
+              // If item exists, add to quantity
+              existingItem.quantity += item.quantity;
+            } else {
+              // If new item, add to array
+              allItems.push({
+                item_name: item.item_name || item.name,
+                name: item.item_name || item.name,
+                quantity: item.quantity,
+                price: item.price,
+              });
+            }
+          });
+        }
+      });
+
+      if (allItems.length === 0) {
+        toast.error("No items in orders");
         setGeneratingKOT(null);
         return;
       }
 
-      // Generate KOT locally without API call
+      // Generate KOT with all aggregated items
       setKotData({
         table,
-        items: items.map((item: any) => ({
+        items: allItems.map((item: any) => ({
           name: item.item_name || item.name,
           quantity: item.quantity,
           price: item.price,
