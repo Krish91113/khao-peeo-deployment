@@ -1,0 +1,4 @@
+node_modules
+.env
+ENV_SETUP.md
+INITIALIZE_DATABASE.md
