@@ -5,9 +5,10 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "seed:tables": "node scripts/seedTables.js"
+    "dev": "nodemon backend/server.js",
+    "start": "nodemon backend/server.js",
+    "build" :"npm install && npm install --prefix frontend && npm run build --prefix frontend",
+    "seed:tables": "node backend/scripts/seedTables.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
